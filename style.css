@@ -1,0 +1,180 @@
+/* Dutton Translator - Bespoke Editorial & Heritage Stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-primary: #121212;
+  --bg-surface: #181818;
+  --bg-card: #1e1d1b;
+  --bg-card-hover: #242220;
+  --text-main: #f3eee6;
+  --text-muted: #8e887f;
+  --border-subtle: #2a2825;
+  --border-highlight: #453e34;
+  --dutton-gold: #c8933b;
+  --dutton-gold-hover: #dfa84a;
+  --dutton-gold-glow: rgba(200, 147, 59, 0.25);
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif-brand {
+  font-family: 'Bitter', Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+.font-mono-code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Dutton Subtle Grain / Grid Background */
+.subtle-grain {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Hairline borders */
+.hairline-border {
+  border: 1px solid var(--border-subtle);
+}
+
+.hairline-b {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.hairline-t {
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Active language tab styling */
+.lang-tab {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.lang-tab.active {
+  background-color: #262421;
+  color: var(--dutton-gold);
+  border-color: var(--dutton-gold);
+  font-weight: 600;
+  box-shadow: 0 0 12px var(--dutton-gold-glow);
+}
+
+/* Voice pulse animations */
+@keyframes mic-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    transform: scale(1);
+  }
+}
+
+.recording-pulse {
+  animation: mic-pulse 1.4s infinite ease-in-out;
+  background-color: #2b1715 !important;
+  color: #f87171 !important;
+  border-color: #ef4444 !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Equalizer audio wave animation for speech readout */
+.audio-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+}
+
+.audio-bar {
+  width: 3px;
+  background-color: var(--dutton-gold);
+  border-radius: 9999px;
+  animation: wave-bar 1s ease-in-out infinite alternate;
+}
+
+.audio-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+.audio-bar:nth-child(2) { height: 14px; animation-delay: 0.3s; }
+.audio-bar:nth-child(3) { height: 18px; animation-delay: 0.2s; }
+.audio-bar:nth-child(4) { height: 10px; animation-delay: 0.4s; }
+.audio-bar:nth-child(5) { height: 16px; animation-delay: 0.15s; }
+
+@keyframes wave-bar {
+  0% { transform: scaleY(0.3); }
+  100% { transform: scaleY(1); }
+}
+
+/* Custom minimal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: #2e2b27;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #47423c;
+}
+
+/* Smooth textarea formatting */
+textarea {
+  resize: none;
+}
+textarea:focus {
+  outline: none;
+}
+
+/* Shimmer loader during translation */
+@keyframes goldShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-loading {
+  background: linear-gradient(90deg, rgba(200, 147, 59, 0.05) 25%, rgba(200, 147, 59, 0.25) 50%, rgba(200, 147, 59, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: goldShimmer 1.8s infinite linear;
+}
+
+/* Modal transition */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  background-color: rgba(18, 18, 18, 0.82);
+}
+
+/* Tooltip badge */
+.badge-gold {
+  background-color: rgba(200, 147, 59, 0.12);
+  color: var(--dutton-gold);
+  border: 1px solid rgba(200, 147, 59, 0.25);
+}

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dutton Translator — Universal & Punjabi Voice Translation</title>
+  <meta name="description" content="Official Dutton Translator by Dutton & Co. Real-time translation across 130+ languages including Punjabi, equipped with live voice recognition and text-to-speech.">
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+
+  <!-- Google Fonts: Bitter, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dutton: {
+              black: '#121212',
+              surface: '#181818',
+              card: '#1e1d1b',
+              cardHover: '#252320',
+              gold: '#c8933b',
+              goldHover: '#dfa84a',
+              goldGlow: 'rgba(200, 147, 59, 0.25)',
+              muted: '#8e887f',
+              border: '#2a2825',
+              highlight: '#453e34'
+            }
+          },
+          fontFamily: {
+            serif: ['Bitter', 'Georgia', 'serif'],
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#121212] text-[#f3eee6] min-h-screen subtle-grain selection:bg-[#c8933b] selection:text-black flex flex-col">
+
+  <!-- Header matching Dutton & Co. Fixed Theme -->
+  <header class="sticky top-0 z-50 bg-[#121212]/92 backdrop-blur-md hairline-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      
+      <!-- Dutton Brand Identifier -->
+      <a href="#" class="flex items-center gap-3.5 group">
+        <img src="logo.jpg" alt="Dutton Logo" class="w-10 h-10 rounded-md object-cover border border-[#2a2825] group-hover:border-[#c8933b] transition shadow-md">
+        <div>
+          <div class="font-serif font-bold text-lg sm:text-xl tracking-tight text-white group-hover:text-[#c8933b] transition flex items-center gap-2">
+            <span>Dutton Translator</span>
+            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-[#c8933b]/15 text-[#c8933b] border border-[#c8933b]/30 uppercase tracking-wider">v2.5</span>
+          </div>
+          <div class="text-[11px] text-[#8e887f] uppercase tracking-wider font-mono">
+            Heritage Translation Engine
+          </div>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-[#8e887f]">
+        <button id="nav-translator" class="text-white hover:text-[#c8933b] transition flex items-center gap-1.5 active-nav font-semibold">
+          <i class="fa-solid fa-language text-xs"></i> Translator
+        </button>
+        <button id="nav-conversation" class="hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-comments text-xs"></i> Conversation Mode
+        </button>
+        <button id="nav-phrasebook" class="hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-book-bookmark text-xs"></i> Punjabi Vault
+        </button>
+        <button id="nav-history" class="hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left text-xs"></i> History (<span id="history-counter">0</span>)
+        </button>
+        <a href="mailto:contact@duttonco.tech" class="text-xs px-3.5 py-1.5 rounded border border-[#38332c] text-[#c8933b] hover:bg-[#c8933b] hover:text-black transition flex items-center gap-1.5">
+          <i class="fa-regular fa-envelope"></i> contact@duttonco.tech
+        </a>
+      </nav>
+
+      <!-- Mobile Quick Actions -->
+      <div class="md:hidden flex items-center gap-2">
+        <button id="mobile-mode-toggle" class="text-xs px-3 py-1.5 rounded border border-[#38332c] text-[#c8933b] flex items-center gap-1">
+          <i class="fa-solid fa-bars"></i> Menu
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Dropdown Menu -->
+  <div id="mobile-menu" class="hidden md:hidden bg-[#181818] hairline-b px-4 py-3 space-y-2 text-sm text-[#8e887f]">
+    <button id="mob-nav-translator" class="block w-full text-left py-2 px-3 rounded hover:bg-[#252320] text-white">
+      <i class="fa-solid fa-language mr-2 text-[#c8933b]"></i> Translator
+    </button>
+    <button id="mob-nav-conversation" class="block w-full text-left py-2 px-3 rounded hover:bg-[#252320] hover:text-white">
+      <i class="fa-solid fa-comments mr-2 text-[#c8933b]"></i> Conversation Mode
+    </button>
+    <button id="mob-nav-phrasebook" class="block w-full text-left py-2 px-3 rounded hover:bg-[#252320] hover:text-white">
+      <i class="fa-solid fa-book-bookmark mr-2 text-[#c8933b]"></i> Punjabi Phrasebook
+    </button>
+    <button id="mob-nav-history" class="block w-full text-left py-2 px-3 rounded hover:bg-[#252320] hover:text-white">
+      <i class="fa-solid fa-clock-rotate-left mr-2 text-[#c8933b]"></i> Translation History
+    </button>
+  </div>
+
+  <!-- Main Hero & Translation Studio Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+
+    <!-- Top Headline Banner -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 hairline-b">
+      <div>
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-[#1e1d1b] border border-[#2a2825] text-[11px] font-mono text-[#c8933b] mb-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>130+ WORLD LANGUAGES &bull; FULL PUNJABI VOICE SUITE</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-white tracking-tight">
+          Precision Translation. Across Every Frontier.
+        </h1>
+        <p class="text-sm text-[#8e887f] mt-1 max-w-2xl">
+          Engineered by Dutton &amp; Co. with speech synthesis, live microphone dictation, and native Gurmukhi Punjabi translation.
+        </p>
+      </div>
+
+      <!-- Quick stats badge -->
+      <div class="flex items-center gap-3 text-xs text-[#8e887f] font-mono">
+        <div class="px-3 py-1.5 rounded bg-[#181818] border border-[#2a2825] flex items-center gap-2">
+          <i class="fa-solid fa-microphone text-[#c8933b]"></i> Speech Input
+        </div>
+        <div class="px-3 py-1.5 rounded bg-[#181818] border border-[#2a2825] flex items-center gap-2">
+          <i class="fa-solid fa-volume-high text-[#c8933b]"></i> Voice Readout
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN TRANSLATION VIEW -->
+    <section id="view-translator" class="space-y-4">
+      
+      <!-- Language Selector Bar -->
+      <div class="bg-[#181818] hairline-border rounded-xl p-2.5 flex flex-col lg:flex-row items-center justify-between gap-3 shadow-lg">
+        
+        <!-- Source Languages Strip -->
+        <div class="w-full lg:w-[48%] flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0" id="source-tabs-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Swap Language Center Button -->
+        <div class="flex items-center justify-center">
+          <button id="btn-swap-languages" title="Swap Languages (Ctrl+Shift+S)" class="w-10 h-10 rounded-full bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] hover:bg-[#252320] hover:text-[#dfa84a] flex items-center justify-center transition shadow-md active:scale-95 group">
+            <i class="fa-solid fa-arrow-right-arrow-left group-hover:rotate-180 transition-transform duration-300"></i>
+          </button>
+        </div>
+
+        <!-- Target Languages Strip -->
+        <div class="w-full lg:w-[48%] flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0" id="target-tabs-container">
+          <!-- Populated by JS -->
+        </div>
+
+      </div>
+
+      <!-- Dual Translation Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        
+        <!-- SOURCE CARD -->
+        <div class="bg-[#181818] hairline-border rounded-2xl flex flex-col justify-between overflow-hidden shadow-2xl focus-within:border-[#c8933b]/60 transition duration-200">
+          
+          <!-- Source Card Header -->
+          <div class="px-5 py-3 hairline-b bg-[#151515] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="source-lang-flag" class="text-base">✨</span>
+              <span id="source-lang-display" class="text-xs font-mono font-medium uppercase tracking-wider text-[#c8933b]">
+                Auto Detect
+              </span>
+              <span id="detected-badge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded bg-[#c8933b]/10 text-[#c8933b] border border-[#c8933b]/30"></span>
+            </div>
+
+            <!-- Clear button -->
+            <button id="btn-clear-source" class="text-xs text-[#8e887f] hover:text-white transition flex items-center gap-1 px-2 py-1 rounded hover:bg-[#252320]" title="Clear text (Esc)">
+              <i class="fa-solid fa-xmark"></i> Clear
+            </button>
+          </div>
+
+          <!-- Textarea Input & Live Recording Status -->
+          <div class="p-5 flex-grow relative flex flex-col">
+            <!-- Active Continuous Recording Status Bar -->
+            <div id="recording-status-bar" class="hidden mb-3 p-2.5 rounded-xl bg-[#221711] border border-[#c8933b]/60 flex items-center justify-between text-xs animate-fadeIn">
+              <div class="flex items-center gap-2.5">
+                <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                <span class="font-mono font-bold text-red-400 uppercase tracking-wider">Recording Live</span>
+                <span class="text-[#8e887f]">&bull;</span>
+                <span id="recording-timer" class="font-mono text-[#c8933b]">00:00</span>
+                <span class="text-[#8e887f] hidden sm:inline">&bull;</span>
+                <span class="text-[#f3eee6] text-[11px] hidden sm:inline">Speaking appends to passage</span>
+              </div>
+              <button id="btn-stop-continuous" class="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-300 font-mono text-[11px] flex items-center gap-1 transition">
+                <i class="fa-solid fa-stop text-[9px]"></i> Stop (Click Mic)
+              </button>
+            </div>
+
+            <textarea id="source-text" rows="7" 
+              placeholder="Enter text to translate or click Voice Input to speak continuously..."
+              class="w-full bg-transparent text-white placeholder-[#55504a] text-lg sm:text-xl font-normal leading-relaxed focus:outline-none resize-none flex-grow"
+              maxlength="5000"></textarea>
+
+            <!-- Live Speech Interim Preview (Inline at bottom of textarea) -->
+            <div id="speech-live-bar" class="hidden mt-2 pt-2 hairline-t flex items-center gap-2 text-xs font-mono text-[#c8933b]">
+              <i class="fa-solid fa-microphone-lines animate-pulse"></i>
+              <span class="text-[#8e887f]">Live:</span>
+              <span id="speech-live-interim" class="text-white italic truncate"></span>
+            </div>
+          </div>
+
+          <!-- Source Footer & Voice Controls -->
+          <div class="px-5 py-3.5 hairline-t bg-[#151515] flex items-center justify-between flex-wrap gap-2">
+            
+            <!-- Left Voice / Input Tools -->
+            <div class="flex items-center gap-2">
+              
+              <!-- Microphone Button (Continuous Speech to Text Toggle) -->
+              <button id="btn-mic" class="px-3.5 py-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] hover:text-[#dfa84a] text-sm flex items-center gap-2 transition group" title="Click to start/stop continuous recording">
+                <i id="mic-icon" class="fa-solid fa-microphone text-base group-hover:scale-110 transition"></i>
+                <span id="mic-label" class="text-xs font-medium text-white hidden sm:inline">Voice Input</span>
+              </button>
+
+              <!-- Source Speaker (Text to Speech) -->
+              <button id="btn-speak-source" class="p-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#8e887f] hover:text-white transition" title="Listen to input in original accent">
+                <i class="fa-solid fa-volume-high text-sm"></i>
+              </button>
+
+              <!-- Paste Clipboard -->
+              <button id="btn-paste" class="p-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#8e887f] hover:text-white transition" title="Paste from clipboard">
+                <i class="fa-regular fa-clipboard text-sm"></i>
+              </button>
+
+            </div>
+
+            <!-- Right: Character Count & Translate trigger -->
+            <div class="flex items-center gap-3">
+              <span id="char-count" class="text-xs font-mono text-[#8e887f]">0 / 5000</span>
+              
+              <button id="btn-translate-manual" class="px-4 py-2 rounded-lg bg-[#c8933b] hover:bg-[#dfa84a] text-black font-semibold text-xs tracking-wide uppercase transition flex items-center gap-1.5 shadow-md active:scale-95">
+                <span>Translate</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- TARGET CARD (TRANSLATION OUTPUT) -->
+        <div class="bg-[#1e1d1b] hairline-border rounded-2xl flex flex-col justify-between overflow-hidden shadow-2xl relative">
+          
+          <!-- Target Card Header -->
+          <div class="px-5 py-3 hairline-b bg-[#171615] flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span id="target-lang-flag" class="text-base">🇮🇳</span>
+              <span id="target-lang-display" class="text-xs font-mono font-medium uppercase tracking-wider text-[#c8933b]">
+                Punjabi (ਪੰਜਾਬੀ)
+              </span>
+              <!-- Authentic Accent Indicator Badge -->
+              <span id="accent-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#c8933b]/15 text-[#c8933b] border border-[#c8933b]/35 text-[10px] font-mono">
+                <i class="fa-solid fa-certificate text-[9px]"></i>
+                <span id="accent-name">Original Punjabi Accent</span>
+              </span>
+            </div>
+
+            <!-- Status Indicator -->
+            <div class="flex items-center gap-2">
+              <div id="translation-spinner" class="hidden items-center gap-1.5 text-xs text-[#c8933b]">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <span class="text-[11px] font-mono">Translating...</span>
+              </div>
+              <span id="engine-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#121212] border border-[#2a2825] text-[#8e887f]">
+                Dutton Neural
+              </span>
+            </div>
+          </div>
+
+          <!-- Output Content Area -->
+          <div class="p-5 flex-grow relative min-h-[180px]">
+            <div id="target-placeholder" class="text-[#55504a] text-lg sm:text-xl font-light">
+              Translation will appear here instantly...
+            </div>
+            
+            <div id="target-text" class="hidden text-white text-lg sm:text-2xl font-serif leading-relaxed select-text whitespace-pre-wrap"></div>
+
+            <!-- Transliteration / Romanization preview (if available) -->
+            <div id="target-phonetics" class="hidden mt-4 pt-3 hairline-t text-xs font-mono text-[#c8933b] italic"></div>
+          </div>
+
+          <!-- Target Footer & Voice Pronunciation Tools -->
+          <div class="px-5 py-3.5 hairline-t bg-[#171615] flex items-center justify-between flex-wrap gap-2">
+            
+            <!-- Voice Pronunciation Controls -->
+            <div class="flex items-center gap-2">
+              
+              <!-- Speak Target Text Button -->
+              <button id="btn-speak-target" class="px-3.5 py-2 rounded-lg bg-[#262421] border border-[#38332c] hover:border-[#c8933b] text-[#c8933b] hover:text-[#dfa84a] text-sm flex items-center gap-2 transition group" title="Pronounce translation">
+                <i class="fa-solid fa-volume-high text-base group-hover:scale-110 transition"></i>
+                <span class="text-xs font-medium text-white hidden sm:inline">Pronounce</span>
+              </button>
+
+              <!-- Speaking Equalizer Wave Animation (Active during speech) -->
+              <div id="audio-wave-box" class="hidden items-center gap-2 px-2 py-1 rounded bg-[#121212] border border-[#2a2825]">
+                <div class="audio-wave">
+                  <span class="audio-bar"></span>
+                  <span class="audio-bar"></span>
+                  <span class="audio-bar"></span>
+                  <span class="audio-bar"></span>
+                  <span class="audio-bar"></span>
+                </div>
+                <span class="text-[11px] font-mono text-[#c8933b]">Speaking...</span>
+              </div>
+
+              <!-- Speed Selector Dropdown -->
+              <div class="relative inline-block text-left">
+                <select id="voice-speed-select" class="bg-[#121212] text-xs font-mono text-[#8e887f] hover:text-white border border-[#2a2825] rounded-lg px-2 py-2 focus:outline-none focus:border-[#c8933b]">
+                  <option value="0.8">0.8x Slow</option>
+                  <option value="1.0" selected>1.0x Normal</option>
+                  <option value="1.2">1.2x Fast</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Action Buttons: Copy, Star, Fullscreen, Share -->
+            <div class="flex items-center gap-1.5">
+              
+              <!-- Copy button -->
+              <button id="btn-copy-target" class="p-2 rounded-lg bg-[#121212] border border-[#2a2825] hover:border-[#c8933b] text-[#8e887f] hover:text-[#c8933b] transition relative" title="Copy to clipboard">
+                <i class="fa-regular fa-copy text-sm"></i>
+                <span id="copy-tooltip" class="hidden absolute -top-8 left-1/2 -translate-x-1/2 bg-[#c8933b] text-black text-[10px] font-bold px-2 py-0.5 rounded shadow">Copied!</span>
+              </button>
+
+              <!-- Star / Save phrase -->
+              <button id="btn-star-target" class="p-2 rounded-lg bg-[#121212] border border-[#2a2825] hover:border-[#c8933b] text-[#8e887f] hover:text-amber-400 transition" title="Save to Vault">
+                <i class="fa-regular fa-star text-sm"></i>
+              </button>
+
+              <!-- Share -->
+              <button id="btn-share-target" class="p-2 rounded-lg bg-[#121212] border border-[#2a2825] hover:border-[#c8933b] text-[#8e887f] hover:text-white transition" title="Share Translation">
+                <i class="fa-solid fa-share-nodes text-sm"></i>
+              </button>
+
+              <!-- Fullscreen card presentation -->
+              <button id="btn-fullscreen-target" class="p-2 rounded-lg bg-[#121212] border border-[#2a2825] hover:border-[#c8933b] text-[#8e887f] hover:text-white transition" title="Fullscreen Presentation">
+                <i class="fa-solid fa-expand text-sm"></i>
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Quick Phrase Starters (Tailored for Dutton & Punjabi) -->
+      <div class="pt-2">
+        <div class="flex items-center gap-2 mb-2 text-xs font-mono text-[#8e887f]">
+          <i class="fa-solid fa-bolt text-[#c8933b]"></i>
+          <span>QUICK PHRASE STARTERS:</span>
+        </div>
+        <div class="flex flex-wrap gap-2" id="phrase-starters">
+          <button class="phrase-chip text-xs px-3 py-1.5 rounded-lg bg-[#181818] border border-[#2a2825] hover:border-[#c8933b] hover:text-[#c8933b] transition" data-phrase="Welcome to the Dutton Ranch.">
+            "Welcome to the Dutton Ranch."
+          </button>
+          <button class="phrase-chip text-xs px-3 py-1.5 rounded-lg bg-[#181818] border border-[#2a2825] hover:border-[#c8933b] hover:text-[#c8933b] transition" data-phrase="ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?">
+            "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?" (Punjabi)
+          </button>
+          <button class="phrase-chip text-xs px-3 py-1.5 rounded-lg bg-[#181818] border border-[#2a2825] hover:border-[#c8933b] hover:text-[#c8933b] transition" data-phrase="Honor, legacy, and respect define our work.">
+            "Honor, legacy, and respect define our work."
+          </button>
+          <button class="phrase-chip text-xs px-3 py-1.5 rounded-lg bg-[#181818] border border-[#2a2825] hover:border-[#c8933b] hover:text-[#c8933b] transition" data-phrase="ਡਟਨ ਕੰਪਨੀ ਦਾ ਮੁੱਖ ਦਫ਼ਤਰ ਕਿੱਥੇ ਹੈ?">
+            "ਡਟਨ ਕੰਪਨੀ ਦਾ ਮੁੱਖ ਦਫ਼ਤਰ ਕਿੱਥੇ ਹੈ?" (Punjabi)
+          </button>
+          <button class="phrase-chip text-xs px-3 py-1.5 rounded-lg bg-[#181818] border border-[#2a2825] hover:border-[#c8933b] hover:text-[#c8933b] transition" data-phrase="Thank you for visiting Dutton & Co.">
+            "Thank you for visiting Dutton & Co."
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- VOICE CONVERSATION MODE (Interactive Walkie-Talkie / Two-Way Intercom) -->
+    <section id="view-conversation" class="hidden space-y-6">
+      <div class="bg-[#181818] hairline-border rounded-2xl p-6 sm:p-8 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 hairline-b">
+          <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-[#c8933b]/15 text-[#c8933b] text-xs font-mono uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-headset"></i> Live Intercom
+            </div>
+            <h2 class="text-2xl font-serif font-bold text-white">Two-Way Voice Conversation</h2>
+            <p class="text-sm text-[#8e887f] mt-1">Speak in English, hear in Punjabi. Speak in Punjabi, hear in English. Real-time dialog.</p>
+          </div>
+          
+          <button id="btn-back-to-translator" class="self-start sm:self-auto text-xs px-4 py-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Back to Studio
+          </button>
+        </div>
+
+        <!-- Conversation Stream -->
+        <div id="convo-feed" class="py-6 min-h-[300px] max-h-[460px] overflow-y-auto space-y-4 px-2">
+          <!-- Welcome Bubble -->
+          <div class="bg-[#1e1d1b] hairline-border rounded-xl p-4 max-w-xl mx-auto text-center space-y-2">
+            <i class="fa-solid fa-microphone-lines text-2xl text-[#c8933b]"></i>
+            <h4 class="font-serif font-bold text-base text-white">Start a Voice Exchange</h4>
+            <p class="text-xs text-[#8e887f]">Press either microphone below to begin speaking. The speech engine will automatically transcribe, translate, and pronounce the reply.</p>
+          </div>
+        </div>
+
+        <!-- Dual Walkie Talkie Controls -->
+        <div class="pt-6 hairline-t grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Person A (English) -->
+          <div class="bg-[#151515] hairline-border rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-mono text-[#c8933b] uppercase">Speaker 1</div>
+              <div class="text-base font-serif font-bold text-white">English (US)</div>
+            </div>
+            <button id="btn-convo-mic-a" class="w-14 h-14 rounded-full bg-[#1e1d1b] border-2 border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] flex items-center justify-center text-xl transition shadow-lg active:scale-95 group">
+              <i class="fa-solid fa-microphone group-hover:scale-110 transition"></i>
+            </button>
+          </div>
+
+          <!-- Person B (Punjabi) -->
+          <div class="bg-[#151515] hairline-border rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-mono text-[#c8933b] uppercase">Speaker 2</div>
+              <div class="text-base font-serif font-bold text-white">Punjabi (ਪੰਜਾਬੀ)</div>
+            </div>
+            <button id="btn-convo-mic-b" class="w-14 h-14 rounded-full bg-[#1e1d1b] border-2 border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] flex items-center justify-center text-xl transition shadow-lg active:scale-95 group">
+              <i class="fa-solid fa-microphone group-hover:scale-110 transition"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PUNJABI HERITAGE PHRASEBOOK SECTION -->
+    <section id="view-phrasebook" class="hidden space-y-6">
+      <div class="bg-[#181818] hairline-border rounded-2xl p-6 sm:p-8 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 hairline-b">
+          <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-[#c8933b]/15 text-[#c8933b] text-xs font-mono uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-feather"></i> Heritage Vault
+            </div>
+            <h2 class="text-2xl font-serif font-bold text-white">Dutton Punjabi Phrasebook</h2>
+            <p class="text-sm text-[#8e887f] mt-1">Essential everyday, business, and cultural Punjabi phrases curated with audio pronunciation.</p>
+          </div>
+          <button id="btn-back-to-translator-phrase" class="self-start sm:self-auto text-xs px-4 py-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Back to Studio
+          </button>
+        </div>
+
+        <!-- Phrasebook Categories & Grid -->
+        <div class="py-6 space-y-6" id="phrasebook-list">
+          <!-- Dynamically populated or static cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TRANSLATION HISTORY & VAULT SECTION -->
+    <section id="view-history" class="hidden space-y-6">
+      <div class="bg-[#181818] hairline-border rounded-2xl p-6 sm:p-8 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 hairline-b">
+          <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-[#c8933b]/15 text-[#c8933b] text-xs font-mono uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-box-archive"></i> Records Vault
+            </div>
+            <h2 class="text-2xl font-serif font-bold text-white">Recent Translations &amp; Saved Phrases</h2>
+            <p class="text-sm text-[#8e887f] mt-1">Review, re-pronounce, copy, or export your past translations.</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button id="btn-clear-history" class="text-xs px-3.5 py-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-red-500/50 text-red-400 hover:text-red-300 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-trash-can"></i> Clear All
+            </button>
+            <button id="btn-back-to-translator-hist" class="text-xs px-4 py-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] transition flex items-center gap-1.5">
+              <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+          </div>
+        </div>
+
+        <!-- History cards list -->
+        <div id="history-list" class="py-6 space-y-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SEARCHABLE ALL-LANGUAGES MODAL -->
+  <div id="lang-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-[#181818] hairline-border rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 hairline-b bg-[#151515] flex items-center justify-between">
+        <div>
+          <h3 id="modal-title" class="font-serif font-bold text-lg text-white">Select Language</h3>
+          <p class="text-xs text-[#8e887f]">Choose from over 130 worldwide languages</p>
+        </div>
+        <button id="btn-close-modal" class="w-8 h-8 rounded-full bg-[#1e1d1b] border border-[#2a2825] text-[#8e887f] hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="p-4 hairline-b bg-[#171615]">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#8e887f]"></i>
+          <input type="text" id="modal-search-input" 
+            placeholder="Search language name, script, or country..." 
+            class="w-full bg-[#121212] border border-[#2a2825] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-[#55504a] focus:outline-none focus:border-[#c8933b]">
+        </div>
+      </div>
+
+      <!-- Language List Grid -->
+      <div id="modal-lang-grid" class="p-4 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 flex-grow">
+        <!-- Rendered by JS -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FULLSCREEN TRANSLATION MODAL (For Presentation / Big Screen) -->
+  <div id="fullscreen-modal" class="hidden fixed inset-0 z-50 bg-[#121212] flex flex-col justify-between p-6 sm:p-12">
+    <div class="flex items-center justify-between hairline-b pb-4">
+      <div class="flex items-center gap-3">
+        <img src="logo.jpg" class="w-8 h-8 rounded object-cover">
+        <span class="font-serif font-bold text-lg text-white">Dutton Translator &bull; Focus View</span>
+      </div>
+      <button id="btn-close-fullscreen" class="px-4 py-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] text-[#c8933b] hover:text-white text-xs font-mono uppercase tracking-wider">
+        <i class="fa-solid fa-compress mr-1.5"></i> Close Focus View (Esc)
+      </button>
+    </div>
+
+    <div class="max-w-4xl mx-auto my-auto text-center space-y-6">
+      <div id="fs-target-lang" class="text-xs font-mono text-[#c8933b] uppercase tracking-widest">Punjabi (ਪੰਜਾਬੀ)</div>
+      <div id="fs-target-text" class="text-3xl sm:text-5xl md:text-6xl font-serif text-white font-bold leading-tight"></div>
+      <div id="fs-source-text" class="text-lg sm:text-xl text-[#8e887f] font-sans italic"></div>
+    </div>
+
+    <div class="flex items-center justify-center gap-4 pt-4 hairline-t">
+      <button id="fs-btn-speak" class="px-5 py-2.5 rounded-xl bg-[#c8933b] hover:bg-[#dfa84a] text-black font-semibold text-sm flex items-center gap-2">
+        <i class="fa-solid fa-volume-high"></i> Pronounce
+      </button>
+      <button id="fs-btn-copy" class="px-5 py-2.5 rounded-xl bg-[#1e1d1b] border border-[#2a2825] text-white hover:border-[#c8933b] text-sm flex items-center gap-2">
+        <i class="fa-regular fa-copy"></i> Copy
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Alert -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl bg-[#1e1d1b] border border-[#c8933b] shadow-2xl text-white text-xs font-mono flex items-center gap-2 transition transform translate-y-4">
+    <i class="fa-solid fa-circle-check text-[#c8933b]"></i>
+    <span id="toast-message">Notification</span>
+  </div>
+
+  <!-- Dutton Heritage Footer -->
+  <footer class="hairline-t bg-[#0e0e0e] text-[#8e887f] py-10 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <!-- Brand & Copyright -->
+      <div class="flex items-center gap-3.5">
+        <img src="logo.jpg" alt="Dutton Logo" class="w-8 h-8 rounded object-cover border border-[#2a2825]">
+        <div>
+          <div class="font-serif font-bold text-white text-sm">
+            Dutton Translator
+          </div>
+          <div class="text-[11px] text-[#8e887f]">
+            &copy; 2026 Dutton &amp; Co. All rights reserved.
+          </div>
+        </div>
+      </div>
+
+      <!-- System status -->
+      <div class="flex items-center gap-6 text-xs font-mono">
+        <div class="flex items-center gap-1.5 text-emerald-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Core Engines Operational</span>
+        </div>
+        <div class="text-[#666]">
+          Punjabi Neural Pack v4.2
+        </div>
+      </div>
+
+      <!-- Ecosystem links -->
+      <div class="flex items-center gap-4 text-xs font-medium">
+        <a href="mailto:contact@duttonco.tech" class="hover:text-[#c8933b] transition">contact@duttonco.tech</a>
+        <span>&bull;</span>
+        <span class="text-[#555]">Legacy of Excellence</span>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="languages.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
