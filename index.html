@@ -2,6 +2,7 @@
 <html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dutton Translator — Universal & Punjabi Voice Translation</title>
   <meta name="description" content="Official Dutton Translator by Dutton & Co. Real-time translation across 130+ languages including Punjabi, equipped with live voice recognition and text-to-speech.">
@@ -168,7 +169,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         
         <!-- SOURCE CARD -->
-        <div class="bg-[#181818] hairline-border rounded-2xl flex flex-col justify-between overflow-hidden shadow-2xl focus-within:border-[#c8933b]/60 transition duration-200">
+        <div id="source-card" class="bg-[#181818] hairline-border rounded-2xl flex flex-col justify-between overflow-hidden shadow-2xl focus-within:border-[#c8933b]/60 transition-all duration-300">
           
           <!-- Source Card Header -->
           <div class="px-5 py-3 hairline-b bg-[#151515] flex items-center justify-between">
@@ -189,18 +190,34 @@
           <!-- Textarea Input & Live Recording Status -->
           <div class="p-5 flex-grow relative flex flex-col">
             <!-- Active Continuous Recording Status Bar -->
-            <div id="recording-status-bar" class="hidden mb-3 p-2.5 rounded-xl bg-[#221711] border border-[#c8933b]/60 flex items-center justify-between text-xs animate-fadeIn">
-              <div class="flex items-center gap-2.5">
-                <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-                <span class="font-mono font-bold text-red-400 uppercase tracking-wider">Recording Live</span>
-                <span class="text-[#8e887f]">&bull;</span>
-                <span id="recording-timer" class="font-mono text-[#c8933b]">00:00</span>
-                <span class="text-[#8e887f] hidden sm:inline">&bull;</span>
-                <span class="text-[#f3eee6] text-[11px] hidden sm:inline">Speaking appends to passage</span>
+            <div id="recording-status-bar" class="hidden mb-3 p-3 rounded-xl bg-[#231212] border-2 border-red-500/70 flex items-center justify-between text-xs animate-fadeIn shadow-xl">
+              <div class="flex items-center gap-3">
+                <div class="relative flex items-center justify-center w-6 h-6">
+                  <span class="absolute w-full h-full rounded-full bg-red-500 opacity-75 animate-ping"></span>
+                  <span class="relative w-3.5 h-3.5 rounded-full bg-red-600 shadow-md"></span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-red-400 uppercase tracking-wider text-xs">RECORDING LIVE</span>
+                    <span class="text-[#8e887f]">&bull;</span>
+                    <span id="recording-timer" class="font-mono text-[#c8933b] font-bold text-sm">00:00</span>
+                  </div>
+                  <p class="text-[11px] text-[#f3eee6]/80 mt-0.5">Listening continuously &bull; Speak naturally &bull; Words append to passage</p>
+                </div>
               </div>
-              <button id="btn-stop-continuous" class="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-300 font-mono text-[11px] flex items-center gap-1 transition">
-                <i class="fa-solid fa-stop text-[9px]"></i> Stop (Click Mic)
-              </button>
+              <div class="flex items-center gap-2">
+                <!-- Audio wave indicator inside bar -->
+                <div class="audio-wave hidden sm:inline-flex mr-2">
+                  <span class="audio-bar !bg-red-500"></span>
+                  <span class="audio-bar !bg-red-500"></span>
+                  <span class="audio-bar !bg-red-500"></span>
+                  <span class="audio-bar !bg-red-500"></span>
+                  <span class="audio-bar !bg-red-500"></span>
+                </div>
+                <button id="btn-stop-continuous" class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-mono font-bold text-[11px] flex items-center gap-1.5 shadow-md transition active:scale-95">
+                  <i class="fa-solid fa-stop text-[10px]"></i> Stop (Click Mic)
+                </button>
+              </div>
             </div>
 
             <textarea id="source-text" rows="7" 
@@ -222,11 +239,23 @@
             <!-- Left Voice / Input Tools -->
             <div class="flex items-center gap-2">
               
-              <!-- Microphone Button (Continuous Speech to Text Toggle) -->
-              <button id="btn-mic" class="px-3.5 py-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] hover:text-[#dfa84a] text-sm flex items-center gap-2 transition group" title="Click to start/stop continuous recording">
-                <i id="mic-icon" class="fa-solid fa-microphone text-base group-hover:scale-110 transition"></i>
-                <span id="mic-label" class="text-xs font-medium text-white hidden sm:inline">Voice Input</span>
-              </button>
+              <!-- Microphone Button with Pulsing Radar Rings & Equalizer -->
+              <div class="mic-btn-wrapper">
+                <span id="mic-ring-1" class="mic-ripple-ring hidden"></span>
+                <span id="mic-ring-2" class="mic-ripple-ring mic-ripple-ring-2 hidden"></span>
+                <span id="mic-ring-3" class="mic-ripple-ring mic-ripple-ring-3 hidden"></span>
+                <button id="btn-mic" class="relative z-10 px-3.5 py-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#c8933b] hover:text-[#dfa84a] text-sm flex items-center gap-2 transition-all duration-300 group" title="Click to start/stop continuous recording">
+                  <i id="mic-icon" class="fa-solid fa-microphone text-base group-hover:scale-110 transition"></i>
+                  <span id="mic-label" class="text-xs font-medium text-white hidden sm:inline">Voice Input</span>
+                  <!-- Mini live equalizer bars when recording -->
+                  <span id="mic-audio-bars" class="hidden items-center gap-0.5 ml-1">
+                    <span class="rec-bar"></span>
+                    <span class="rec-bar"></span>
+                    <span class="rec-bar"></span>
+                    <span class="rec-bar"></span>
+                  </span>
+                </button>
+              </div>
 
               <!-- Source Speaker (Text to Speech) -->
               <button id="btn-speak-source" class="p-2 rounded-lg bg-[#1e1d1b] border border-[#2a2825] hover:border-[#c8933b] text-[#8e887f] hover:text-white transition" title="Listen to input in original accent">

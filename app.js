@@ -62,6 +62,11 @@
     btnTranslateManual: document.getElementById('btn-translate-manual'),
 
     // Continuous Recording Elements
+    sourceCard: document.getElementById('source-card'),
+    micRing1: document.getElementById('mic-ring-1'),
+    micRing2: document.getElementById('mic-ring-2'),
+    micRing3: document.getElementById('mic-ring-3'),
+    micAudioBars: document.getElementById('mic-audio-bars'),
     recordingStatusBar: document.getElementById('recording-status-bar'),
     recordingTimer: document.getElementById('recording-timer'),
     btnStopContinuous: document.getElementById('btn-stop-continuous'),
@@ -554,7 +559,15 @@
       if (state.activeListeningMode === 'studio') {
         if (els.recordingStatusBar) els.recordingStatusBar.classList.remove('hidden');
         if (els.speechLiveBar) els.speechLiveBar.classList.remove('hidden');
-        els.btnMic.classList.add('recording-pulse', 'border-red-500', 'text-red-400');
+        if (els.micRing1) els.micRing1.classList.remove('hidden');
+        if (els.micRing2) els.micRing2.classList.remove('hidden');
+        if (els.micRing3) els.micRing3.classList.remove('hidden');
+        if (els.micAudioBars) {
+          els.micAudioBars.classList.remove('hidden');
+          els.micAudioBars.classList.add('inline-flex');
+        }
+        if (els.sourceCard) els.sourceCard.classList.add('card-recording-glow');
+        els.btnMic.classList.add('mic-recording-active');
         if (els.micIcon) {
           els.micIcon.className = 'fa-solid fa-stop text-base text-red-400';
         }
@@ -690,7 +703,15 @@
     stopRecordingTimer();
     if (els.recordingStatusBar) els.recordingStatusBar.classList.add('hidden');
     if (els.speechLiveBar) els.speechLiveBar.classList.add('hidden');
-    els.btnMic.classList.remove('recording-pulse', 'border-red-500', 'text-red-400');
+    if (els.micRing1) els.micRing1.classList.add('hidden');
+    if (els.micRing2) els.micRing2.classList.add('hidden');
+    if (els.micRing3) els.micRing3.classList.add('hidden');
+    if (els.micAudioBars) {
+      els.micAudioBars.classList.add('hidden');
+      els.micAudioBars.classList.remove('inline-flex');
+    }
+    if (els.sourceCard) els.sourceCard.classList.remove('card-recording-glow');
+    els.btnMic.classList.remove('mic-recording-active', 'recording-pulse', 'border-red-500', 'text-red-400');
     if (els.micIcon) {
       els.micIcon.className = 'fa-solid fa-microphone text-base group-hover:scale-110 transition';
     }
@@ -794,38 +815,48 @@
     const chunk = speechQueue[speechQueueIndex];
     speechQueueIndex++;
 
-    // 1. Primary: Google Studio Neural Audio Stream - 100% Authentic Native Regional Accent
+    const encoded = encodeURIComponent(chunk);
+    // Primary: Google Studio Neural stream via googleapis (clean and reliable without referer)
+    const ttsUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=${encodeURIComponent(langCode)}&q=${encoded}`;
+
+    if (audioPlayer) {
+      audioPlayer.pause();
+      audioPlayer = null;
+    }
+
     try {
-      const encoded = encodeURIComponent(chunk);
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=${langCode}&client=tw-ob`;
-
-      if (audioPlayer) {
-        audioPlayer.pause();
-        audioPlayer = null;
-      }
-
-      audioPlayer = new Audio(ttsUrl);
+      audioPlayer = new Audio();
+      audioPlayer.referrerPolicy = 'no-referrer';
+      audioPlayer.crossOrigin = 'anonymous';
+      audioPlayer.src = ttsUrl;
       audioPlayer.playbackRate = state.speechSpeed || 1.0;
 
-      audioPlayer.onended = () => {
-        if (isPlayingSpeech) {
-          playNextSpeechChunk(langCode);
+      let hasEnded = false;
+      const onEndedHandler = () => {
+        if (!hasEnded) {
+          hasEnded = true;
+          if (isPlayingSpeech) playNextSpeechChunk(langCode);
         }
       };
 
+      audioPlayer.onended = onEndedHandler;
+
       audioPlayer.onerror = (e) => {
-        console.warn('Audio stream error, falling back to Web Speech API with strict native voice matching:', e);
-        speakChunkViaSpeechSynthesis(chunk, langCode, () => {
+        console.warn(`Primary TTS stream failed for ${langCode}, trying alternate Google endpoint:`, e);
+        tryAlternateTTS(chunk, langCode, () => {
           if (isPlayingSpeech) playNextSpeechChunk(langCode);
         });
       };
 
-      audioPlayer.play().catch(err => {
-        console.warn('Autoplay restricted, falling back to SpeechSynthesis:', err);
-        speakChunkViaSpeechSynthesis(chunk, langCode, () => {
-          if (isPlayingSpeech) playNextSpeechChunk(langCode);
+      const playPromise = audioPlayer.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.warn('Playback error, switching to alternate TTS:', err);
+          tryAlternateTTS(chunk, langCode, () => {
+            if (isPlayingSpeech) playNextSpeechChunk(langCode);
+          });
         });
-      });
+      }
     } catch (err) {
       speakChunkViaSpeechSynthesis(chunk, langCode, () => {
         if (isPlayingSpeech) playNextSpeechChunk(langCode);
@@ -833,39 +864,98 @@
     }
   }
 
-  // Strict Native Fallback for Web Speech API
+  function tryAlternateTTS(chunk, langCode, onChunkEnd) {
+    const encoded = encodeURIComponent(chunk);
+    const altUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=${encodeURIComponent(langCode)}&client=tw-ob`;
+
+    try {
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer = null;
+      }
+      audioPlayer = new Audio();
+      audioPlayer.referrerPolicy = 'no-referrer';
+      audioPlayer.src = altUrl;
+      audioPlayer.playbackRate = state.speechSpeed || 1.0;
+
+      audioPlayer.onended = () => {
+        if (onChunkEnd) onChunkEnd();
+      };
+
+      audioPlayer.onerror = () => {
+        // Fallback to Web Speech Synthesis
+        speakChunkViaSpeechSynthesis(chunk, langCode, onChunkEnd);
+      };
+
+      audioPlayer.play().catch(() => {
+        speakChunkViaSpeechSynthesis(chunk, langCode, onChunkEnd);
+      });
+    } catch (e) {
+      speakChunkViaSpeechSynthesis(chunk, langCode, onChunkEnd);
+    }
+  }
+
+  // Strict Native Fallback for Web Speech API with regional Indian fallback for Punjabi
   function speakChunkViaSpeechSynthesis(chunk, langCode, onChunkEnd) {
     if (!window.speechSynthesis) {
-      stopSpeaking();
+      if (onChunkEnd) onChunkEnd();
       return;
     }
 
-    const targetLangObj = getLang(langCode);
-    const speechLocale = targetLangObj.speech || 'en-US';
-    const utterance = new SpeechSynthesisUtterance(chunk);
-    utterance.rate = state.speechSpeed || 1.0;
-    utterance.lang = speechLocale;
+    try {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.resume();
 
-    // Strict native voice matching: do not play an English voice reading Punjabi/foreign words
-    const voices = window.speechSynthesis.getVoices();
-    const matchedVoice = voices.find(v => {
-      const vl = v.lang.toLowerCase();
-      return vl === speechLocale.toLowerCase() || vl.startsWith(langCode.toLowerCase());
-    });
+      const targetLangObj = getLang(langCode);
+      const speechLocale = targetLangObj.speech || 'en-US';
+      const utterance = new SpeechSynthesisUtterance(chunk);
+      utterance.rate = state.speechSpeed || 1.0;
+      utterance.lang = speechLocale;
 
-    if (matchedVoice) {
-      utterance.voice = matchedVoice;
-    }
+      const voices = window.speechSynthesis.getVoices();
+      let matchedVoice = null;
 
-    utterance.onend = () => {
+      // 1. Exact locale match
+      matchedVoice = voices.find(v => v.lang.toLowerCase() === speechLocale.toLowerCase());
+
+      // 2. Prefix match (e.g. starts with 'pa' or 'hi')
+      if (!matchedVoice) {
+        matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith(langCode.toLowerCase()));
+      }
+
+      // 3. Name match (e.g. contains 'punjabi' or 'hindi')
+      if (!matchedVoice) {
+        matchedVoice = voices.find(v => v.name.toLowerCase().includes(targetLangObj.name.toLowerCase()));
+      }
+
+      // 4. Special fallback for Punjabi/Hindi: use Hindi or Indian English voice if dedicated Punjabi voice is missing on device
+      if (!matchedVoice && (langCode === 'pa' || langCode === 'hi')) {
+        matchedVoice = voices.find(v => 
+          v.lang.toLowerCase().includes('hi') || 
+          v.name.toLowerCase().includes('hindi') || 
+          v.name.toLowerCase().includes('india') ||
+          v.lang.toLowerCase().includes('in')
+        );
+      }
+
+      if (matchedVoice) {
+        utterance.voice = matchedVoice;
+      }
+
+      utterance.onend = () => {
+        if (onChunkEnd) onChunkEnd();
+      };
+
+      utterance.onerror = (e) => {
+        console.warn('SpeechSynthesis utterance error:', e);
+        if (onChunkEnd) onChunkEnd();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn('SpeechSynthesis invocation exception:', e);
       if (onChunkEnd) onChunkEnd();
-    };
-
-    utterance.onerror = () => {
-      stopSpeaking();
-    };
-
-    window.speechSynthesis.speak(utterance);
+    }
   }
 
   function stopSpeaking() {
